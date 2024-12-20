@@ -452,7 +452,20 @@ class Board:
                     card_pos = c.card_pos
                     self.current_board.remove(c)
                     c.destroy()
-                    self.draw_card(card_pos)
+
+                    # Handle XL mode where board_height is not a multiple of num_variations
+                    if self.deck:
+
+                        # Draw card normally if deck is not empty
+                        self.draw_card(card_pos)
+
+                    else:
+
+                        # Move card with highest card_pos into empty space
+                        self.current_board.sort(key = lambda x: x.card_pos)
+                        self.current_board[-1].card_pos = card_pos
+                        self.current_board[-1].calc_position()
+                        self.num_cards -= 1
 
             # Remove selected cards and move unselected cards into vacant spaces
             else:
