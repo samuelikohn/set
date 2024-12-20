@@ -37,31 +37,62 @@ class Button(QPushButton):
 
         # Go back a page on Esc
         elif event.key() == Qt.Key.Key_Escape:
-            if self.main.main_menu:
-                self.main.main_menu.exit_btn.click()
 
+            # Main menu
+            if self.main.main_menu:
+
+                # "No" on confirm exit screen
+                if self.main.main_menu.exit_btn.isHidden():
+                    self.main.main_menu.confirm_exit_no.click()
+
+                # Exit game from main menu
+                else:
+                    self.main.main_menu.exit_btn.click()
+
+            # Time trial page
             elif self.main.time_trial_page:
+
+                # Go back from times screen to time trial menu
                 if self.main.time_trial_page.go_back_btn.isHidden():
                     self.main.time_trial_page.return_to_menu_btn.click()
+
+                # Return to main menu from time trial page
                 else:
                     self.main.time_trial_page.go_back_btn.click()
 
+            # Exit tutorial to main menu
             elif self.main.tutorial_page:
                 self.main.tutorial_page.exit_btn.click()
 
+            # Pause game on Esc
             elif self.main.board:
-                self.main.board.pause_game_btn_click()
+                self.main.board.pause_game_btn.click()
 
+            # Settings page
             elif self.main.settings_page:
-                self.main.settings_page.return_to_menu_btn.click()
+                
+                # "No" on unsaved changes screen
+                if self.main.settings_page.return_to_menu_btn.isHidden():
+                    self.main.settings_page.return_to_menu_no.click()
 
+                # Return to main menu from settings
+                else:
+                    self.main.settings_page.return_to_menu_btn.click()
+
+            # Challenges page
             elif self.main.challenges_page:
+
+                # Go back to challenges menu from play menu
                 if not self.main.challenges_page.go_back_from_challenges_btn.isHidden():
                     self.main.challenges_page.go_back_from_challenges_btn.click()
+
+                # Go back from scores menu to challenges
                 elif not self.main.challenges_page.go_back_from_scores_btn.isHidden():
                     self.main.challenges_page.go_back_from_scores_btn.click()
+
+                # Go back to main menu from challenges
                 else:
-                    self.main.challenges_page.return_to_menu_btn.isHidden()
+                    self.main.challenges_page.return_to_menu_btn.click()
 
         # Left arrow
         elif event.key() == Qt.Key.Key_Left:
@@ -228,10 +259,32 @@ class Dropdown(QComboBox):
 
         # Go back a page on Esc
         if event.key() == Qt.Key.Key_Escape:
-            if self.main.time_trial_page.go_back_btn.isHidden():
-                self.main.time_trial_page.return_to_menu_btn.click()
-            else:
-                self.main.time_trial_page.go_back_btn.click()
+            
+            # Time trial page
+            if self.main.time_trial_page:
+
+                # Go back from times screen to time trial menu
+                if self.main.time_trial_page.go_back_btn.isHidden():
+                    self.main.time_trial_page.return_to_menu_btn.click()
+
+                # Return to main menu from time trial page
+                else:
+                    self.main.time_trial_page.go_back_btn.click()
+
+            # Challenges page
+            elif self.main.challenges_page:
+
+                # Go back to challenges menu from play menu
+                if not self.main.challenges_page.go_back_from_challenges_btn.isHidden():
+                    self.main.challenges_page.go_back_from_challenges_btn.click()
+
+                # Go back from scores menu to challenges
+                elif not self.main.challenges_page.go_back_from_scores_btn.isHidden():
+                    self.main.challenges_page.go_back_from_scores_btn.click()
+
+                # Go back to main menu from challenges
+                else:
+                    self.main.challenges_page.return_to_menu_btn.click()
 
         # Left arrow
         elif self.left and event.key() == Qt.Key.Key_Left:
@@ -612,6 +665,8 @@ class Slider(QSlider):
             value = value,
             cursor = cursor
         )
+
+        self.main = main
 
         self.hover = False
         self.color = main.settings["accent_color"]
