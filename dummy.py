@@ -28,6 +28,7 @@ class DummyBoard:
         self.board_height = 1
         self.current_board = [None]
         self.ai = None
+        self.mode = None
         self.call_set_btn = DummyButton()
 
     
@@ -81,6 +82,7 @@ class StaticBoard:
 
         self.selection_delay_timer.stop()
         self.selection_delay_timer_active = False
+        self.timer.start()
 
         # Reset button
         self.call_set_btn.setText("Call SET")
@@ -104,6 +106,7 @@ class StaticBoard:
         
         # Stop timer
         self.call_set_btn.timer.stop()
+        self.timer.stop()
 
         # Update button text based on called condition, pause, then continue
         self.call_set_btn.called = False
@@ -179,8 +182,8 @@ class StaticBoard:
         self.quit_game_yes.deleteLater()
         self.quit_game_no.deleteLater()
         self.show_settings_btn.deleteLater()
-        self.challenge_score_card.deleteLater()
-        self.challenge_score_text.deleteLater()
+        self.player_score_card.deleteLater()
+        self.player_score_text.deleteLater()
         self.choose_panel.deleteLater()
         self.scroller.deleteLater()
         for tile in self.settings_name_tiles:
@@ -302,7 +305,7 @@ class StaticBoard:
         self.final_time.show()
 
         # Check list of scores for current settings and static challenge
-        times = self.main.scores[f"{"static"}_{self.main.settings["num_traits"]}{self.main.settings["num_variations"]}"]
+        times = self.main.times[f"{"static"}_{self.main.settings["num_traits"]}{self.main.settings["num_variations"]}"]
         
         # Static challenge: Check if elapsed time is new min for times
         if not times or self.elapsed_time < min(times):
@@ -337,8 +340,8 @@ class StaticBoard:
                 self.add_to_found_display()
 
                 # Increment score
-                current_score = self.challenge_score_card.text()[0]
-                self.challenge_score_card.setText(f"{int(current_score) + 1}/{self.num_cards // self.num_variations}")
+                current_score = self.player_score_card.text()[0]
+                self.player_score_card.setText(f"{int(current_score) + 1}/{self.num_cards // self.num_variations}")
 
             self.update_board()
 
@@ -407,30 +410,26 @@ class StaticBoard:
         # Manage focus
         self.quit_game_no.setFocus()
 
-    def return_to_menu(self, static_score = None):
+    def return_to_menu(self, time = None):
 
-        if static_score:
+        if time:
 
-            # Get existing scores for current settings
-            score_key = f"static_{self.main.settings["num_traits"]}{self.main.settings["num_variations"]}"
-            scores = self.main.scores[score_key]
-            scores.append(static_score)
+            # Get existing times for current settings
+            time_key = f"static_{self.num_traits}{self.num_variations}"
+            scores = self.main.times[time_key]
+            scores.append(time)
             scores.sort()
 
-            # Max scores stored is 10
+            # Max times stored is 10
             if len(scores) == 11:
                 scores.pop()
 
-            # Save new list of scores
-            self.main.scores[score_key] = scores
-            with open("scores.json", "w") as f:
-                dump(self.main.scores, f, indent = 4)
+            # Save new list of times
+            self.main.times[time_key] = scores
+            with open("times.json", "w") as f:
+                dump(self.main.times, f, indent = 4)
 
-            self.main.go_to_challenges_page()
-
-        else:
-            self.main.go_to_main_menu()
-
+        self.main.go_to_challenges_page()
         self.destroy()
 
     def show_settings(self):
@@ -532,41 +531,39 @@ class StaticBoard:
         # Update the label text
         self.display_time.setText(time_str)
 
-    def __init__(
-            self,
-            main,
-            num_traits,
-            num_variations
-        ):
+    def __init__(self, main, mode):
 
         self.main = main
+        self.mode = mode
         self.unique_sets = []
         self.found_cards = []
 
         # Dummy attributes
-        self.ai = None
-        self.challenge_type = "static"
         self.add_cards_btn = DummyAddCardsButton()
-        self.enable_hints = None
         self.sets = []
+        
+        # Set flags for settings
+        self.show_num_sets = False
+        self.show_cards_left_in_deck = main.settings["show_num_sets"]
+        self.enable_hints = False
 
         # Initialize board values
-        self.num_traits = num_traits
-        self.num_variations = num_variations # Equal to number of cards per SET
+        self.num_traits = main.settings["num_traits"]
+        self.num_variations = main.settings["num_variations"] # Equal to number of cards per SET
         self.deck = []
         self.selected_cards = []
         self.current_board = []
-        self.all_traits = ["color", "shape", "number", "fill", "corner"][:num_traits]
+        self.all_traits = ["color", "shape", "number", "fill", "corner"][:self.num_traits]
         self.all_properties = {
-            "color": main.settings["colors"][:num_variations],
-            "shape": main.settings["selected_shapes"][:num_variations],
-            "number": [1, 2, 3, 4, 5][:num_variations],
-            "fill": ["solid", "empty", "striped", "crossed", "dense"][:num_variations],
-            "corner": ["none", "top_left", "top_right", "bottom_left", "bottom_right"][:num_variations]
+            "color": main.settings["colors"][:self.num_variations],
+            "shape": main.settings["selected_shapes"][:self.num_variations],
+            "number": [1, 2, 3, 4, 5][:self.num_variations],
+            "fill": ["solid", "empty", "striped", "crossed", "dense"][:self.num_variations],
+            "corner": ["none", "top_left", "top_right", "bottom_left", "bottom_right"][:self.num_variations]
         }
 
         # Set board and card dimensions
-        match (num_traits, num_variations):
+        match (self.num_traits, self.num_variations):
             case (3, 3):
                 self.board_width = 3
                 self.board_height = 3
@@ -605,15 +602,15 @@ class StaticBoard:
                 self.card_length = main.screen_height // 12
 
         # Set indices for initializing deck
-        if num_traits == 3:
+        if self.num_traits == 3:
             ll = 1
             mm = 1
-        elif num_traits == 4:
-            ll = num_variations
+        elif self.num_traits == 4:
+            ll = self.num_variations
             mm = 1
-        elif num_traits == 5:
-            ll = num_variations
-            mm = num_variations
+        elif self.num_traits == 5:
+            ll = self.num_variations
+            mm = self.num_variations
 
         # Number of cards allowed on the board
         self.num_cards = self.board_height * self.board_width
@@ -624,7 +621,7 @@ class StaticBoard:
         numbers = (1, 2, 3, 4, 5)
         fills = ("solid", "empty", "striped", "crossed", "dense")
         corners = ("none", "top_left", "top_right", "bottom_left", "bottom_right")
-        self.deck = [{"color": colors[i], "shape": shapes[j], "number": numbers[k], "fill": fills[l], "corner": corners[m]} for i in range(num_variations) for j in range(num_variations) for k in range(num_variations) for l in range(ll) for m in range(mm)]
+        self.deck = [{"color": colors[i], "shape": shapes[j], "number": numbers[k], "fill": fills[l], "corner": corners[m]} for i in range(self.num_variations) for j in range(self.num_variations) for k in range(self.num_variations) for l in range(ll) for m in range(mm)]
 
         # Draw cards to guarantee a minimum number of SETs
         self.draw_sets()
@@ -719,24 +716,24 @@ class StaticBoard:
             self.settings_values_tiles[i].hide()
 
         # Score card
-        self.challenge_score_card = QLabel(
+        self.player_score_card = QLabel(
             parent = main.central_widget,
             text = f"0/{self.num_cards // self.num_variations}",
             geometry = QRect(0, 20 * main.screen_height // 90, 3 * main.screen_width // 20, 15 * main.screen_height // 90),
             font = QFont("Trebuchet MS", main.screen_height // 15),
             alignment = Qt.AlignmentFlag.AlignCenter
         )
-        self.challenge_score_card.show()
+        self.player_score_card.show()
 
         # Score text
-        self.challenge_score_text = QLabel(
+        self.player_score_text = QLabel(
             parent = main.central_widget,
             text = "SETs Found",
             geometry = QRect(0, 16 * main.screen_height // 90, 3 * main.screen_width // 20, 3 * main.screen_height // 90),
             font = QFont("Trebuchet MS", main.screen_height // 50),
             alignment = Qt.AlignmentFlag.AlignCenter
         )
-        self.challenge_score_text.show()
+        self.player_score_text.show()
 
         # Display found SETs
         # Choose Panel

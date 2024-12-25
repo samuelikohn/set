@@ -20,6 +20,16 @@ class Board:
         
         self.update_board()
         
+    def apply_penalty(self):
+        
+        # Apply score penalty if in score mode
+        if self.mode in ["recycle", "xs", "ai"] and self.player_score_card.text() != "0":
+            self.player_score_card.setText(str(int(self.player_score_card.text()) - 1))
+
+        # Apply time penalty if in time mode, amount based on settings
+        elif self.mode in ["time_trial", "xl"]:
+            self.elapsed_time += self.num_variations ** self.num_traits
+        
     def call_set(self):
 
         # Change cursor icon to pointing hand over cards when clickable
@@ -32,13 +42,15 @@ class Board:
             self.call_set_btn.timer.start(100)
 
             # Pause AI
-            if self.ai:
+            if self.mode == "ai":
                 self.ai.stop()
 
     def call_set_reset(self, remove_cards, is_set, source):
 
         self.selection_delay_timer.stop()
         self.selection_delay_timer_active = False
+        if self.mode in ["recycle", "xl", "time_trial"]:
+            self.timer.start()
 
         # Reset button
         self.call_set_btn.setText("Call SET")
@@ -56,7 +68,7 @@ class Board:
                 card.update()
 
             # Resume AI
-            if self.ai:
+            if self.mode == "ai":
                 self.ai.start()
         
         else:
@@ -66,6 +78,8 @@ class Board:
         
         # Stop timer
         self.call_set_btn.timer.stop()
+        if self.mode in ["recycle", "xl", "time_trial"]:
+            self.timer.stop()
 
         # Update button text based on called condition, pause, then continue
         self.call_set_btn.called = False
@@ -87,17 +101,7 @@ class Board:
         
         # Stop updates after 100 total
         if self.call_set_btn.time_left == 0:
-
-            # Apply score penalty if in AI mode/challenge
-            if (self.challenge_type == "xs" or self.challenge_type == "recycle") and self.challenge_score_card.text() != "0":
-                self.challenge_score_card.setText(str(int(self.challenge_score_card.text()) - 1))
-            elif self.ai and self.player_score_card.text() != "0":
-                self.player_score_card.setText(str(int(self.player_score_card.text()) - 1))
-
-            # Apply time penalty if in time trial mode/challenge, amount based on settings
-            if self.timer:
-                self.elapsed_time += self.main.settings["num_variations"] ** self.main.settings["num_traits"]
-            
+            self.apply_penalty()
             self.call_set_stop_timer(remove_cards = True)
         
         # Update "Call Set" button styling based on time_left value
@@ -253,17 +257,14 @@ class Board:
             self.enable_hints.deleteLater()
             if self.color_hint:
                 self.color_hint.deleteLater()
-        if self.timer:
+        self.player_score_card.deleteLater()
+        self.player_score_text.deleteLater()
+        if self.mode in ["time_trial", "xl", "recycle"]:
             self.timer.deleteLater()
             self.display_time.deleteLater()
             self.final_time.deleteLater()
-        if self.challenge_type == "recycle" or self.challenge_type == "xs":
-            self.challenge_score_card.deleteLater()
-            self.challenge_score_text.deleteLater()
-        if self.ai:
+        if self.mode == "ai":
             self.ai.destroy()
-            self.player_score_card.deleteLater()
-            self.player_score_text.deleteLater()
             self.ai_score_card.deleteLater()
             self.ai_score_text.deleteLater()
         self.game_over_text.deleteLater()
@@ -299,23 +300,19 @@ class Board:
         self.update_buttons()
 
         # Show final time if in time trial mode
-        if self.timer:
+        if self.mode in ["recycle", "time_trial", "xl"]:
             self.timer.stop()
             
-            if self.challenge_type != "recycle":
+            if self.mode != "recycle":
                 self.final_time.setText(f"Final Time: {self.main.translate_time(self.elapsed_time)}")
                 self.final_time.show()
 
-            # Get list of times for current settings
-            if not self.challenge_type:
-                times = self.main.times[f"{self.main.settings["num_traits"]}_trait_{self.main.settings["num_variations"]}_var"]
-
         # Check list of scores for current settings and challenge type
-        if self.challenge_type:
-            times = self.main.scores[f"{self.challenge_type}_{self.main.settings["num_traits"]}{self.main.settings["num_variations"]}"]
+        if self.mode in ["recycle", "xl", "xs", "time_trial"]:
+            times = self.main.times[f"{self.mode}_{self.num_traits}{self.num_variations}"]
         
         # Configure text for game over screen
-        if self.ai:
+        if self.mode == "ai":
 
             # AI mode: evaluate player score against AI score
             if int(self.player_score_card.text()) > int(self.ai_score_card.text()):
@@ -325,15 +322,15 @@ class Board:
             else:
                 self.game_over_text.setText("It's a Tie")
 
-        elif (self.challenge_type == "recycle" or self.challenge_type == "xs") and (not times or int(self.challenge_score_card.text()) > max(times)):
+        elif self.mode in ["recycle", "xs"] and (not times or int(self.challenge_score_card.text()) > max(times)):
 
             # Recycle, XS challenge: Check if score is new max for scores
             self.game_over_text.setText("New High Score!")
 
-        elif self.timer and self.challenge_type != "recycle" and (not times or self.elapsed_time < min(times)):
+        elif self.mode in ["xl", "time_trial"] and (not times or self.elapsed_time < min(times)):
 
             # Time trial or XL challenge: Check if elapsed time is new min for times
-            if self.challenge_type == "xl":
+            if self.mode == "xl":
                 self.game_over_text.setText("New High Score!")
             else:
                 self.game_over_text.setText("New Best Time!")
@@ -424,9 +421,9 @@ class Board:
         if is_set:
 
             # Update score if in AI mode or challenge
-            if self.challenge_type == "recycle" or self.challenge_type == "xs":
-                self.challenge_score_card.setText(str(int(self.challenge_score_card.text()) + 1))
-            elif self.ai:
+            if self.mode in ["recycle", "xs", "xl", "practice"]:
+                self.player_score_card.setText(str(int(self.player_score_card.text()) + 1))
+            elif self.mode == "ai":
                 if source == "player":
                     self.player_score_card.setText(str(int(self.player_score_card.text()) + 1))
                 elif source == "ai":
@@ -440,7 +437,7 @@ class Board:
                     c = self.selected_cards.pop()
  
                     # Add card id back into deck if in recycle challenge
-                    if self.challenge_type == "recycle":
+                    if self.mode == "recycle":
                         self.deck.append({
                             "color": c.color,
                             "shape": c.shape,
@@ -480,7 +477,7 @@ class Board:
                     c = self.selected_cards.pop()
 
                     # Add card id back into deck if in recycle challenge
-                    if self.challenge_type == "recycle":
+                    if self.mode == "recycle":
                         self.deck.append({
                             "color": c.color,
                             "shape": c.shape,
@@ -511,16 +508,7 @@ class Board:
 
         # If not SET
         else:
-
-            # Apply score penalty if in AI mode or challenge, AI will never select an incorrect SET
-            if (self.challenge_type == "recycle" or self.challenge_type == "xs") and self.challenge_score_card.text() != "0":
-                self.challenge_score_card.setText(str(int(self.challenge_score_card.text()) - 1))
-            elif self.ai and self.player_score_card.text() != "0":
-                self.player_score_card.setText(str(int(self.player_score_card.text()) - 1))
-
-            # Apply time penalty if in time trial mode/challenge, amount based on settings
-            if self.timer:
-                self.elapsed_time += self.main.settings["num_variations"] ** self.main.settings["num_traits"]
+            self.apply_penalty()
 
             # Unselect all cards
             for c in self.selected_cards:
@@ -529,7 +517,7 @@ class Board:
             self.selected_cards = []
 
             # Start AI
-            if self.ai:
+            if self.mode == "ai":
                 self.ai.start()
     
     def quit_game(self):
@@ -556,7 +544,7 @@ class Board:
                 
             # Pause Call Set button
             if self.call_set_btn.called:
-                if self.ai:
+                if self.mode == "ai":
                     if not self.ai.in_selection:
                         self.call_set_btn.timer.stop()
                 else:
@@ -567,11 +555,11 @@ class Board:
                 self.selection_delay_timer.stop()
 
             # Pause timer if in time trial mode
-            if self.timer:
+            if self.mode in ["recycle", "xl", "time_trial"]:
                 self.timer.stop()
 
             # Pause AI
-            if self.ai:
+            if self.mode == "ai":
                 self.ai.pause()
             
         # Pause, Quit, and Call Set buttons are disabled in either case
@@ -591,67 +579,36 @@ class Board:
         # Manage focus
         self.quit_game_no.setFocus()
 
-    def return_to_menu(self, time = None, recycle_score = None, xl_score = None, xs_score = None):
+    def return_to_menu(self, time = None):
 
-        # Time trial mode
+        # If time supplied in time trial or challenge
         if time:
 
-            # Select list of times based on settings
-            time_key = f"{self.main.settings["num_traits"]}_trait_{self.main.settings["num_variations"]}_var"
+            # Select list of times based on mode and settings
+            time_key = f"{self.mode}_{self.num_traits}{self.num_variations}"
             times = self.main.times[time_key]
             times.append(time)
             times.sort()
 
             # Max times stored is 10
             if len(times) == 11:
-                times.pop()
+                if self.mode in ["recycle", "xs"]:
+                    times.pop(0)
+                else:
+                    times.pop()
 
             # Save new list of times
             self.main.times[time_key] = times
             with open("times.json", "w") as f:
                 dump(self.main.times, f, indent = 4)
 
+        # Return to menu called from
+        if self.mode == "time_trial":
             self.main.go_to_time_trial_page()
-
-        # Any challenge
-        elif recycle_score or xl_score or xs_score:
-
-            # Select list of scores based on challenge format and settings
-            if recycle_score:
-                score_key = f"recycle_{self.main.settings["num_traits"]}{self.main.settings["num_variations"]}"
-                scores = self.main.scores[score_key]
-                scores.append(recycle_score)
-
-            elif xl_score:
-                score_key = f"xl_{self.main.settings["num_traits"]}{self.main.settings["num_variations"]}"
-                scores = self.main.scores[score_key]
-                scores.append(xl_score)
-
-            elif xs_score:
-                score_key = f"xs_{self.main.settings["num_traits"]}{self.main.settings["num_variations"]}"
-                scores = self.main.scores[score_key]
-                scores.append(xs_score)
-
-            scores.sort()
-
-            # Max scores stored is 10
-            if len(scores) == 11:
-                if recycle_score or xs_score:
-                    scores.pop(0)
-                else:
-                    scores.pop()
-
-            # Save new list of scores
-            self.main.scores[score_key] = scores
-            with open("scores.json", "w") as f:
-                dump(self.main.scores, f, indent = 4)
-
-            self.main.go_to_challenges_page()
-
-        # AI or practice mode
-        else:
+        elif self.mode in ["ai", "practice"]:
             self.main.go_to_main_menu()
-            
+        else:
+            self.main.go_to_challenges_page()            
         self.destroy()
 
     def show_settings(self):
@@ -698,7 +655,7 @@ class Board:
                 self.enable_hints.setEnabled(True)
 
             # Resume timer if in time trial mode
-            if self.timer:
+            if self.mode in ["recycle", "xl", "time_trial"]:
                 self.timer.start(100)
 
             # Resume selection delay if active
@@ -710,14 +667,14 @@ class Board:
 
                 # Resume Call Set countdown if active
                 if self.call_set_btn.called:
-                    if self.ai:
+                    if self.mode == "ai":
                         if not self.ai.in_selection:
                             self.call_set_btn.timer.start(100)
                     else:
                         self.call_set_btn.timer.start(100)    
 
                 # Resume AI
-                if self.ai:
+                if self.mode == "ai":
                     self.ai.resume()
 
         # Renable Pause and Quit buttons
@@ -760,7 +717,7 @@ class Board:
         if len(self.sets) == 0:
 
             # Check if deck contains cards to draw
-            if self.deck and self.challenge_type != "xs": # Game is over if no SETS in XS challenge
+            if self.deck and self.mode != "xs": # Game is over if no SETS in XS challenge
                 self.add_cards_btn.setEnabled(True)
                 if self.enable_hints:
                     self.enable_hints.setEnabled(False)
@@ -774,7 +731,7 @@ class Board:
         self.current_board.sort(key = lambda x: x.card_pos)
 
         # Start AI
-        if self.ai and not self.call_set_btn.called:
+        if self.mode == "ai" and not self.call_set_btn.called:
             self.ai.start()
 
         # Change cursor icon to arrow when cards become unclickable
@@ -793,7 +750,7 @@ class Board:
     def update_time(self):
         
         # Time is counted down for recycle challenge, up otherwise
-        if self.challenge_type == "recycle":
+        if self.mode == "recycle":
             self.elapsed_time -= 1
             if self.elapsed_time == 0:
                 self.end_game()
@@ -806,55 +763,39 @@ class Board:
         # Update the label text
         self.display_time.setText(time_str)
 
-    def __init__(
-            self,
-            main,
-            num_traits,
-            num_variations,
-            show_num_sets = False,
-            show_cards_left_in_deck = False,
-            enable_hints = False,
-            called_from_time_trial = False,
-            called_from_ai = False,
-            called_from_recycle_challenge = False,
-            called_from_xl_challenge = False,
-            called_from_xs_challenge = False
-        ):
+    def __init__(self, main, mode):
 
         self.main = main
-
-        # Set challenge flags
-        self.challenge_type = None
-        if called_from_recycle_challenge:
-            self.challenge_type = "recycle"
-        elif called_from_xl_challenge:
-            self.challenge_type = "xl"
-        elif called_from_xs_challenge:
-            self.challenge_type = "xs"
+        self.mode = mode
+        
+        # Set flags for settings
+        self.show_num_sets = (mode == "practice" and main.settings["show_num_sets"])
+        self.show_cards_left_in_deck = main.settings["show_num_sets"]
+        self.enable_hints = (mode == "practice" and main.settings["enable_hints"])
 
         # Initialize board values
-        self.num_traits = num_traits
-        self.num_variations = num_variations # Equal to number of cards per SET
+        self.num_traits = main.settings["num_traits"]
+        self.num_variations = main.settings["num_variations"] # Equal to number of cards per SET
         self.deck = []
         self.sets = []
         self.selected_cards = []
         self.current_board = []
-        self.all_traits = ["color", "shape", "number", "fill", "corner"][:num_traits]
+        self.all_traits = ["color", "shape", "number", "fill", "corner"][:self.num_traits]
         self.all_properties = {
-            "color": main.settings["colors"][:num_variations],
-            "shape": main.settings["selected_shapes"][:num_variations],
-            "number": [1, 2, 3, 4, 5][:num_variations],
-            "fill": ["solid", "empty", "striped", "crossed", "dense"][:num_variations],
-            "corner": ["none", "top_left", "top_right", "bottom_left", "bottom_right"][:num_variations]
+            "color": main.settings["colors"][:self.num_variations],
+            "shape": main.settings["selected_shapes"][:self.num_variations],
+            "number": [1, 2, 3, 4, 5][:self.num_variations],
+            "fill": ["solid", "empty", "striped", "crossed", "dense"][:self.num_variations],
+            "corner": ["none", "top_left", "top_right", "bottom_left", "bottom_right"][:self.num_variations]
         }
 
         # Set board and card dimensions
-        match (num_traits, num_variations):
+        match (self.num_traits, self.num_variations):
             case (3, 3):
-                if called_from_xl_challenge:
+                if self.mode == "xl":
                     self.board_width = 5
                     self.board_height = 3
-                elif called_from_xs_challenge:
+                elif self.mode == "xs":
                     self.board_width = 3
                     self.board_height = 2
                 else:
@@ -862,10 +803,10 @@ class Board:
                     self.board_height = 3
                 self.card_length = main.screen_height // 4
             case (3, 4):
-                if called_from_xl_challenge:
+                if self.mode == "xl":
                     self.board_width = 7
                     self.board_height = 4
-                elif called_from_xs_challenge:
+                elif self.mode == "xs":
                     self.board_width = 4
                     self.board_height = 3
                 else:
@@ -873,10 +814,10 @@ class Board:
                     self.board_height = 4
                 self.card_length = main.screen_height // 5
             case (3, 5):
-                if called_from_xl_challenge:
+                if self.mode == "xl":
                     self.board_width = 8
                     self.board_height = 5
-                elif called_from_xs_challenge:
+                elif self.mode == "xs":
                     self.board_width = 5
                     self.board_height = 4
                 else:
@@ -884,10 +825,10 @@ class Board:
                     self.board_height = 5
                 self.card_length = main.screen_height // 6
             case (4, 3):
-                if called_from_xl_challenge:
+                if self.mode == "xl":
                     self.board_width = 7
                     self.board_height = 4
-                elif called_from_xs_challenge:
+                elif self.mode == "xs":
                     self.board_width = 3
                     self.board_height = 3
                 else:
@@ -895,10 +836,10 @@ class Board:
                     self.board_height = 3
                 self.card_length = main.screen_height // 5
             case (4, 4):
-                if called_from_xl_challenge:
+                if self.mode == "xl":
                     self.board_width = 10
                     self.board_height = 6
-                elif called_from_xs_challenge:
+                elif self.mode == "xs":
                     self.board_width = 6
                     self.board_height = 4
                 else:
@@ -906,10 +847,10 @@ class Board:
                     self.board_height = 4
                 self.card_length = main.screen_height // 7
             case (4, 5):
-                if called_from_xl_challenge:
+                if self.mode == "xl":
                     self.board_width = 12
                     self.board_height = 8
-                elif called_from_xs_challenge:
+                elif self.mode == "xs":
                     self.board_width = 8
                     self.board_height = 5
                 else:
@@ -917,10 +858,10 @@ class Board:
                     self.board_height = 5
                 self.card_length = main.screen_height // 9
             case (5, 3):
-                if called_from_xl_challenge:
+                if self.mode == "xl":
                     self.board_width = 10
                     self.board_height = 6
-                elif called_from_xs_challenge:
+                elif self.mode == "xs":
                     self.board_width = 5
                     self.board_height = 3
                 else:
@@ -928,10 +869,10 @@ class Board:
                     self.board_height = 3
                 self.card_length = main.screen_height // 7
             case (5, 4):
-                if called_from_xl_challenge:
+                if self.mode == "xl":
                     self.board_width = 12
                     self.board_height = 8
-                elif called_from_xs_challenge:
+                elif self.mode == "xs":
                     self.board_width = 7
                     self.board_height = 6
                 else:
@@ -939,10 +880,10 @@ class Board:
                     self.board_height = 8
                 self.card_length = main.screen_height // 9
             case (5, 5):
-                if called_from_xl_challenge:
+                if self.mode == "xl":
                     self.board_width = 17
                     self.board_height = 10
-                elif called_from_xs_challenge:
+                elif self.mode == "xs":
                     self.board_width = 9
                     self.board_height = 9
                 else:
@@ -951,15 +892,15 @@ class Board:
                 self.card_length = main.screen_height // 12
 
         # Set indices for initializing deck
-        if num_traits == 3:
+        if self.num_traits == 3:
             ll = 1
             mm = 1
-        elif num_traits == 4:
-            ll = num_variations
+        elif self.num_traits == 4:
+            ll = self.num_variations
             mm = 1
-        elif num_traits == 5:
-            ll = num_variations
-            mm = num_variations
+        elif self.num_traits == 5:
+            ll = self.num_variations
+            mm = self.num_variations
 
         # Number of cards allowed on the board
         self.num_cards = self.board_height * self.board_width
@@ -970,7 +911,7 @@ class Board:
         numbers = (1, 2, 3, 4, 5)
         fills = ("solid", "empty", "striped", "crossed", "dense")
         corners = ("none", "top_left", "top_right", "bottom_left", "bottom_right")
-        self.deck = [{"color": colors[i], "shape": shapes[j], "number": numbers[k], "fill": fills[l], "corner": corners[m]} for i in range(num_variations) for j in range(num_variations) for k in range(num_variations) for l in range(ll) for m in range(mm)]
+        self.deck = [{"color": colors[i], "shape": shapes[j], "number": numbers[k], "fill": fills[l], "corner": corners[m]} for i in range(self.num_variations) for j in range(self.num_variations) for k in range(self.num_variations) for l in range(ll) for m in range(mm)]
 
         # Draw cards
         for i in range(self.num_cards):
@@ -983,7 +924,7 @@ class Board:
         # Create "Add Cards" Button
         self.add_cards_btn = Button(
             main = main,
-            text = f"Add {num_variations} Cards",
+            text = f"Add {self.num_variations} Cards",
             font = QFont("Trebuchet MS", main.screen_height // 72),
             geometry = QRect(5 * main.screen_width // 120, 5 * main.screen_height // 9, main.screen_width // 15, main.screen_height // 30),
             connect = self.add_cards,
@@ -1120,8 +1061,7 @@ class Board:
         self.selection_delay_timer_active = False
 
         # Show number of SETs on the board if enabled. Will only read from settings if in practice mode
-        self.show_num_sets = None
-        if show_num_sets:
+        if self.show_num_sets:
             self.show_num_sets = QLabel(
                 parent = main.central_widget,
                 geometry = QRect(0, 0, main.screen_width // 5, main.screen_height // 20),
@@ -1131,8 +1071,7 @@ class Board:
             self.show_num_sets.show()
 
         # Show cards remaining in deck if enabled
-        self.show_cards_left_in_deck = None
-        if show_cards_left_in_deck:
+        if self.show_cards_left_in_deck:
 
             # Left align control based on whether other controls exist
             show_cards_left_in_deck_pos = main.screen_width // 5 if self.show_num_sets else 0
@@ -1146,8 +1085,7 @@ class Board:
             self.show_cards_left_in_deck.show()
 
         # Show button to display hints if enabled. Will only show in practice mode.
-        self.enable_hints = None
-        if enable_hints:
+        if self.enable_hints:
             self.color_hint = None # For displaying colored squares in the hints bar
             self.enable_hints = Button(
                 main = main,
@@ -1157,17 +1095,50 @@ class Board:
                 connect = self.get_hint
             )
             self.enable_hints.show()
+            
+        # Player score card
+        self.player_score_card = QLabel(
+            parent = main.central_widget,
+            text = "0",
+            geometry = QRect(0, 20 * main.screen_height // 90, 3 * main.screen_width // 20, 15 * main.screen_height // 90),
+            font = QFont("Trebuchet MS", main.screen_height // 15),
+            alignment = Qt.AlignmentFlag.AlignCenter
+        )
+        self.player_score_card.show()
+
+        # Player score text
+        match mode:
+            case "recycle":
+                score_text = "Score"
+            case "xs":
+                score_text = "Score"
+            case "xl":
+                score_text = "SETs Found"
+            case "time_trial":
+                score_text = "SETs Found"
+            case "ai":
+                score_text = "You"
+            case "practice":
+                score_text = "SETs Found"
+        
+        self.player_score_text = QLabel(
+            parent = main.central_widget,
+            text = score_text,
+            geometry = QRect(0, 16 * main.screen_height // 90, 3 * main.screen_width // 20, 3 * main.screen_height // 90),
+            font = QFont("Trebuchet MS", main.screen_height // 50),
+            alignment = Qt.AlignmentFlag.AlignCenter
+        )
+        self.player_score_text.show()
 
         # Create timer for time trials/challenges
-        self.timer = None
-        if called_from_time_trial or called_from_recycle_challenge or called_from_xl_challenge:
+        if mode in ["time_trial", "recycle", "xl"]:
             
             # Initialize the timer
             self.timer = QTimer(parent = main.central_widget)
             self.timer.timeout.connect(self.update_time)
 
             # Set initial elapsed time
-            if called_from_recycle_challenge:
+            if mode == "recycle":
                 recycle_times = {
                     (3, 3): 600,
                     (3, 4): 1800,
@@ -1179,7 +1150,7 @@ class Board:
                     (5, 4): 27000,
                     (5, 5): 36000
                 }
-                self.elapsed_time = recycle_times[(main.settings["num_traits"], main.settings["num_variations"])]
+                self.elapsed_time = recycle_times[(self.num_traits, self.num_variations)]
             else:
                 self.elapsed_time = 0
 
@@ -1204,53 +1175,9 @@ class Board:
             )
             self.final_time.hide()
 
-        # Score controls for challenges
-        if called_from_recycle_challenge or called_from_xs_challenge:
-
-            # Score card
-            self.challenge_score_card = QLabel(
-                parent = main.central_widget,
-                text = "0",
-                geometry = QRect(0, 20 * main.screen_height // 90, 3 * main.screen_width // 20, 15 * main.screen_height // 90),
-                font = QFont("Trebuchet MS", main.screen_height // 15),
-                alignment = Qt.AlignmentFlag.AlignCenter
-            )
-            self.challenge_score_card.show()
-
-            # Score text
-            self.challenge_score_text = QLabel(
-                parent = main.central_widget,
-                text = "Score",
-                geometry = QRect(0, 16 * main.screen_height // 90, 3 * main.screen_width // 20, 3 * main.screen_height // 90),
-                font = QFont("Trebuchet MS", main.screen_height // 50),
-                alignment = Qt.AlignmentFlag.AlignCenter
-            )
-            self.challenge_score_text.show()
-
-        # Init AI and create score controls
-        self.ai = None
-        if called_from_ai:
+        # Init AI
+        if mode == "ai":
             self.ai = AI(self, main.settings["ai_difficulty"])
-
-            # Player score card
-            self.player_score_card = QLabel(
-                parent = main.central_widget,
-                text = "0",
-                geometry = QRect(0, 20 * main.screen_height // 90, 3 * main.screen_width // 20, 15 * main.screen_height // 90),
-                font = QFont("Trebuchet MS", main.screen_height // 15),
-                alignment = Qt.AlignmentFlag.AlignCenter
-            )
-            self.player_score_card.show()
-
-            # Player score text
-            self.player_score_text = QLabel(
-                parent = main.central_widget,
-                text = "You",
-                geometry = QRect(0, 16 * main.screen_height // 90, 3 * main.screen_width // 20, 3 * main.screen_height // 90),
-                font = QFont("Trebuchet MS", main.screen_height // 50),
-                alignment = Qt.AlignmentFlag.AlignCenter
-            )
-            self.player_score_text.show()
 
             # AI score card
             self.ai_score_card = QLabel(
@@ -1301,7 +1228,7 @@ class Board:
             self.call_set_btn, self.enable_hints, self.pause_game_btn, self.pause_game_btn,
             alt_right = self.pause_game_btn
         )
-        if enable_hints:
+        if self.enable_hints:
             self.enable_hints.arrow_navigation(
                 self.show_settings_btn, self.pause_game_btn, self.add_cards_btn, self.call_set_btn,
                 alt_left = self.call_set_btn, alt_up = self.call_set_btn

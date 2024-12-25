@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QPoint, QRect, Qt, QTimer
-from PyQt6.QtGui import QBrush, QColor, QCursor, QFont, QPainter, QPolygon, QTextDocument
+from PyQt6.QtGui import QBrush, QColor, QCursor, QFont, QPainter, QPolygon
 from PyQt6.QtWidgets import QPushButton, QComboBox, QSlider, QSpinBox, QWidget
 
 
@@ -335,43 +335,25 @@ class GameOver(QWidget):
         
         if event.key() in keys:
 
-            if self.board.challenge_type == "static":
-                self.board.return_to_menu(static_score = self.board.elapsed_time)
-
-            elif self.board.challenge_type == "recycle":
-                self.board.return_to_menu(recycle_score = int(self.board.challenge_score_card.text()))
-
-            elif self.board.challenge_type == "xl":
-                self.board.return_to_menu(xl_score = self.board.elapsed_time)
-
-            elif self.board.challenge_type == "xs":
-                self.board.return_to_menu(xs_score = int(self.board.challenge_score_card.text()))
-
-            elif self.time_trial_page:
+            if self.board.mode in ["static", "xl", "time_trial"]:
                 self.board.return_to_menu(time = self.board.elapsed_time)
+
+            elif self.board.mode in ["recycle", "xs"]:
+                self.board.return_to_menu(time = int(self.board.player_score_card.text()))
 
             else:
                 self.board.return_to_menu()
             
     def mousePressEvent(self, event):
             
-            if self.board.challenge_type == "static":
-                self.board.return_to_menu(static_score = self.board.elapsed_time)
+        if self.board.mode in ["static", "xl", "time_trial"]:
+            self.board.return_to_menu(time = self.board.elapsed_time)
 
-            elif self.board.challenge_type == "recycle":
-                self.board.return_to_menu(recycle_score = int(self.board.challenge_score_card.text()))
+        elif self.board.mode in ["recycle", "xs"]:
+            self.board.return_to_menu(time = int(self.board.player_score_card.text()))
 
-            elif self.board.challenge_type == "xl":
-                self.board.return_to_menu(xl_score = self.board.elapsed_time)
-
-            elif self.board.challenge_type == "xs":
-                self.board.return_to_menu(xs_score = int(self.board.challenge_score_card.text()))
-
-            elif self.time_trial_page:
-                self.board.return_to_menu(time = self.board.elapsed_time)
-
-            else:
-                self.board.return_to_menu()
+        else:
+            self.board.return_to_menu()
                 
     def __init__(self, main, board):
         super().__init__(main.central_widget)
@@ -379,7 +361,7 @@ class GameOver(QWidget):
         self.time_trial_page = main.time_trial_page
         self.screen_width = main.screen_width
         self.screen_height = main.screen_height
-        self.setGeometry(49 * self.screen_width // 320, self.screen_height // 18, 271 * self.screen_width // 320, 17 * self.screen_height // 18)
+        self.setGeometry(0, 0, self.screen_width, self.screen_height)
         self.hide()
 
 
@@ -433,14 +415,14 @@ class PauseButton(Button):
                 self.board.add_cards_btn.setEnabled(True)
             for card in self.board.current_board:
                 card.show()
-            if self.board.challenge_type == "static":
+            if self.board.mode == "static":
                 for card in self.board.found_cards:
                     card.show()
             if self.board.enable_hints:
                 self.board.enable_hints.setEnabled(True)
 
             # Resume timer if in time trial mode
-            if self.board.timer:
+            if self.board.mode in ["static", "recycle", "xl", "time_trial"]:
                 self.board.timer.start(100)
 
             # Start selection delay if active
@@ -451,12 +433,12 @@ class PauseButton(Button):
             else:
 
                 # Resume AI
-                if self.board.ai:
+                if self.board.mode == "ai":
                     self.board.ai.resume()
 
                 # Resume Call Set button if active
                 if self.board.call_set_btn.called:
-                    if self.board.ai:
+                    if self.board.mode == "ai":
                         if not self.board.ai.in_selection:
                             self.board.call_set_btn.timer.start(100)
                     else:
@@ -468,7 +450,7 @@ class PauseButton(Button):
             self.board.call_set_btn.setEnabled(False)
             for card in self.board.current_board:
                 card.hide()
-            if self.board.challenge_type == "static":
+            if self.board.mode == "static":
                 for card in self.board.found_cards:
                     card.hide()
             self.board.add_cards_btn.setEnabled(False)
@@ -497,11 +479,11 @@ class PauseButton(Button):
                 self.board.selection_delay_timer.stop()
 
             # Pause timer if in time trial mode
-            if self.board.timer:
+            if self.board.mode in ["static", "recycle", "xl", "time_trial"]:
                 self.board.timer.stop()
 
             # Pause AI
-            if self.board.ai:
+            if self.board.mode == "ai":
                 self.board.ai.pause()
 
         # Toggle paused state

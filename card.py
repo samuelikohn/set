@@ -30,7 +30,7 @@ class Card(QWidget):
     def mousePressEvent(self, event):
 
         # On left click, toggle card selection
-        if self.board.ai:
+        if self.board.mode == "ai":
             if not self.board.ai.in_selection and event.button() == Qt.MouseButton.LeftButton and self.board.call_set_btn.called and self.board.call_set_btn.time_left > 0:
                 self.board.card_clicked(self, "player")
         elif event.button() == Qt.MouseButton.LeftButton and self.board.call_set_btn.called and self.board.call_set_btn.time_left > 0:

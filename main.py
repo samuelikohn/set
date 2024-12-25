@@ -19,27 +19,6 @@ class Main:
     def go_to_time_trial_page(self):
         self.time_trial_page = TimeTrialPage(self)
 
-    def is_valid_scores(self, val):
-
-        # Score must be stored as a list, empty list if valid
-        if not isinstance(val, list) or not val:
-            return []
-        
-        # Scores must only be positive ints
-        i = 0
-        while i < len(val):
-            if isinstance(val[i], int) and val[i] > 0:
-                i += 1
-            else:
-                val.pop(i)
-
-        # Scores must be sorted, max of 10
-        val.sort()
-        if len(val) > 10:
-            val = val[:10]
-
-        return val
-
     def is_valid_settings(self, key, val, selected_shapes):
 
         all_shapes = ["circle", "square", "triangle", "diamond", "hourglass", "bowtie", "cross", "plus"]
@@ -92,84 +71,6 @@ class Main:
             val = val[:10]
 
         return val
-    
-    def load_scores(self):
-
-        default_scores = {
-            "static_33": [],
-            "static_34": [],
-            "static_35": [],
-            "static_43": [],
-            "static_44": [],
-            "static_45": [],
-            "static_53": [],
-            "static_54": [],
-            "static_55": [],
-            "recycle_33": [],
-            "recycle_34": [],
-            "recycle_35": [],
-            "recycle_43": [],
-            "recycle_44": [],
-            "recycle_45": [],
-            "recycle_53": [],
-            "recycle_54": [],
-            "recycle_55": [],
-            "xl_33": [],
-            "xl_34": [],
-            "xl_35": [],
-            "xl_43": [],
-            "xl_44": [],
-            "xl_45": [],
-            "xl_53": [],
-            "xl_54": [],
-            "xl_55": [],
-            "xs_33": [],
-            "xs_34": [],
-            "xs_35": [],
-            "xs_43": [],
-            "xs_44": [],
-            "xs_45": [],
-            "xs_53": [],
-            "xs_54": [],
-            "xs_55": []
-        }
-
-        # Load from file
-        try:
-            with open('scores.json') as f:
-                scores = load(f)
-
-        # Reset scores if can't load
-        except:
-            scores = default_scores
-
-        else:
-
-            # If valid format, validate scores
-            if isinstance(scores, dict):
-
-                for key in scores.keys():
-
-                    # All keys must represent valid challenge formats
-                    if key not in default_scores:
-                        scores.pop(key, None)
-
-                    # All values must be sorted lists of positive ints with max length of 10
-                    else:
-                        scores[key] = self.is_valid_scores(scores[key])
-                
-                # All challenge formats must be present
-                for key in default_scores:
-                    if key not in scores.keys():
-                        scores[key] = []
-
-            # Reset scores if invalid format
-            else:
-                scores = default_scores
-
-        self.scores = scores
-        with open("scores.json", "w") as f:
-            dump(self.scores, f, indent = 4)
     
     def load_settings(self):
 
@@ -244,17 +145,7 @@ class Main:
 
     def load_times(self):
 
-        default_times = {
-            "3_trait_3_var": [],
-            "3_trait_4_var": [],
-            "3_trait_5_var": [],
-            "4_trait_3_var": [],
-            "4_trait_4_var": [],
-            "4_trait_5_var": [],
-            "5_trait_3_var": [],
-            "5_trait_4_var": [],
-            "5_trait_5_var": []
-        }
+        default_times = {f"{mode}_{t}{v}": [] for mode in ["time_trial", "static", "recycle", "xl", "xs"] for t in [3, 4, 5] for v in [3, 4, 5]}
 
         # Load from file
         try:
@@ -366,9 +257,6 @@ class Main:
 
         # Load times from file, clear any invalid times
         self.load_times()
-
-        # Load challenge scores from file, clear any invalid scores
-        self.load_scores()
 
         # Init pages
         self.settings_page = None

@@ -69,29 +69,12 @@ class TimeTrialPage():
     def show_times(self):
 
         # Get list of times based on selection
-        time_key = ""
-        match (self.traits_list.currentText(), self.variations_list.currentText()):
-            case ("3", "3"):
-                time_key = "3_trait_3_var"
-            case ("3", "4"):
-                time_key = "3_trait_4_var"
-            case ("3", "5"):
-                time_key = "3_trait_5_var"
-            case ("4", "3"):
-                time_key = "4_trait_3_var"
-            case ("4", "4"):
-                time_key = "4_trait_4_var"
-            case ("4", "5"):
-                time_key = "4_trait_5_var"
-            case ("5", "3"):
-                time_key = "5_trait_3_var"
-            case ("5", "4"):
-                time_key = "5_trait_4_var"
-            case ("5", "5"):
-                time_key = "5_trait_5_var"
+        t = self.traits_list.currentText()
+        v = self.variations_list.currentText()
+        time_key = f"time_trial_{t}{v}"
 
         # If no value selected, do nothing
-        if time_key:
+        if t != "Select..." and v != "Select...":
 
             # Erase currently displayed times
             for i in range(10):
@@ -109,13 +92,7 @@ class TimeTrialPage():
                 self.background_tiles[0].setText("No time trials completed for these settings!")
 
     def start_time_trial(self):
-        self.main.board = Board(
-            self.main,
-            self.main.settings["num_traits"],
-            self.main.settings["num_variations"],
-            show_cards_left_in_deck = self.main.settings["show_cards_left_in_deck"],
-            called_from_time_trial = True
-        )
+        self.main.board = Board(self.main, "time_trial")
         self.destroy()
 
     def view_times(self):

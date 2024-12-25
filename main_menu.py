@@ -98,26 +98,13 @@ class MainMenu:
     def start_ai_game(self):
         if self.focus_widget:
             self.focus_widget.clearFocus()
-        self.main.board = Board(
-            self.main,
-            self.main.settings["num_traits"],
-            self.main.settings["num_variations"],
-            show_cards_left_in_deck = self.main.settings["show_cards_left_in_deck"],
-            called_from_ai = True
-        )
+        self.main.board = Board(self.main, "ai")
         self.destroy()
 
     def start_practice_game(self):
         if self.focus_widget:
             self.focus_widget.clearFocus()
-        self.main.board = Board(
-            self.main,
-            self.main.settings["num_traits"],
-            self.main.settings["num_variations"],
-            show_cards_left_in_deck = self.main.settings["show_cards_left_in_deck"],
-            show_num_sets = self.main.settings["show_num_sets"],
-            enable_hints = self.main.settings["enable_hints"]
-        )
+        self.main.board = Board(self.main, "practice")
         self.destroy()
 
     def __init__(self, main):

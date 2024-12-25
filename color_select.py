@@ -198,7 +198,7 @@ class ColorSelect:
         # Selected Text
         self.selected_text = QLabel(
             parent = main.central_widget,
-            text = "Current Colors",
+            text = "Selected Colors",
             font = QFont("Trebuchet MS", main.screen_height // 90),
             geometry = QRect(83 * main.screen_width // 144, 7 * main.screen_height // 16, 7 * main.screen_width // 64, main.screen_height // 30),
             alignment = Qt.AlignmentFlag.AlignCenter

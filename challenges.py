@@ -90,15 +90,15 @@ class Challenges:
 
             # Set text to background tiles
             score_key = f"{challenge_type}_{self.traits_list.currentText()}{self.variations_list.currentText()}"
-            if self.main.scores[score_key]:
+            if self.main.times[score_key]:
                 i = 0
-                for score in self.main.scores[score_key]:
+                for time in self.main.times[score_key]:
                     if challenge_type == "recycle" or challenge_type == "xs":
 
                         # Reverse ordering for score based challenges
-                        self.background_tiles[len(self.main.scores[score_key]) - i - 1].setText(f"{score} SET{"" if score == 1 else "s"}")
+                        self.background_tiles[len(self.main.times[score_key]) - i - 1].setText(f"{time} SET{"" if time == 1 else "s"}")
                     else:
-                        self.background_tiles[i].setText(self.main.translate_time(score))
+                        self.background_tiles[i].setText(self.main.translate_time(time))
                     i += 1
 
             # If no scores recorded
@@ -190,13 +190,7 @@ class Challenges:
         self.static_board_btn.setFocus()
 
     def recycle_cards(self):     
-        self.main.board = Board(
-            self.main,
-            self.main.settings["num_traits"],
-            self.main.settings["num_variations"],
-            show_cards_left_in_deck = self.main.settings["show_cards_left_in_deck"],
-            called_from_recycle_challenge = True
-        )
+        self.main.board = Board(self.main, "recycle")
         self.destroy()
 
     def return_to_menu(self):
@@ -229,11 +223,7 @@ class Challenges:
         self.traits_list.setFocus()
 
     def static_board(self):
-        self.main.board = StaticBoard(
-            self.main,
-            self.main.settings["num_traits"],
-            self.main.settings["num_variations"]
-        )
+        self.main.board = StaticBoard(self.main, "static")
         self.destroy()
 
     def update_buttons(self):
@@ -243,23 +233,11 @@ class Challenges:
         self.xs_scores_btn.update_style()
 
     def xl_board(self):
-        self.main.board = Board(
-            self.main,
-            self.main.settings["num_traits"],
-            self.main.settings["num_variations"],
-            show_cards_left_in_deck = self.main.settings["show_cards_left_in_deck"],
-            called_from_xl_challenge = True
-        )
+        self.main.board = Board(self.main, "xl")
         self.destroy()
 
     def xs_board(self):
-        self.main.board = Board(
-            self.main,
-            self.main.settings["num_traits"],
-            self.main.settings["num_variations"],
-            show_cards_left_in_deck = self.main.settings["show_cards_left_in_deck"],
-            called_from_xs_challenge = True
-        )
+        self.main.board = Board(self.main, "xs")
         self.destroy()
 
     def __init__(self, main):

@@ -1,7 +1,7 @@
 from card import Card
 from dummy import DummyBoard
-from PyQt6.QtCore import QRect, Qt
-from PyQt6.QtGui import QFont
+from PyQt6.QtCore import QRect, QSize, Qt
+from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtWidgets import QLabel
 from ui import Button
 
@@ -1444,7 +1444,7 @@ class Page4:
         # Body text 1
         self.step_3_text_1 = QLabel(
             parent = main.central_widget,
-            text = "• Select the cards in your SET by clicking on them. Once you call SET, you will have 10 seconds to select your cards.\n\n• If you do not select enough cards to form a SET, or the cards you chose do not correctly form a SET, a penalty is applied.\n\t• In AI mode and challenges that count a score, the penalty is -1 point.\n\t• In time trials and challenges with a timer, the penalty is time added to the clock.\n\t• There are no penalties in practice mode.",
+            text = "• Select the cards in your SET by clicking on them. Once you call SET, you will have 10 seconds to select your cards.\n\n• If you do not select enough cards to form a SET, or the cards you chose do not correctly form a SET, a penalty is applied.\n\t• In AI mode and challenges that count a score, the penalty is -1 point.\n\t• In time trials and challenges with a timer, the penalty is time added to the clock.\n\t• There are no penalties in practice mode.\n\n• The game ends when there are no SETs on the board and no cards left in the deck.",
             font = QFont("Trebuchet MS", main.screen_height // 60),
             geometry = QRect(main.screen_width // 6, 23 * main.screen_height // 40, 3 * main.screen_width // 4, 23 * main.screen_height // 80),
             styleSheet = "background-color: #e5daeb",
@@ -1456,71 +1456,63 @@ class Page4:
 class Page5:
 
     def destroy(self):
-        self.title.deleteLater()
-        self.ai_panel.deleteLater()
+        self.game_modes_title.deleteLater()
         self.ai_text.deleteLater()
         self.ai_body_text.deleteLater()
-        self.practice_panel.deleteLater()
         self.practice_text.deleteLater()
         self.practice_body_text.deleteLater()
-        self.time_trial_panel.deleteLater()
         self.time_trial_text.deleteLater()
         self.time_trial_body_text.deleteLater()
-        self.challenge_panel.deleteLater()
         self.challenge_text.deleteLater()
         self.challenge_body_text.deleteLater()
+        self.settings_title.deleteLater()
+        self.settings_panel.deleteLater()
+        self.tooltip_image.deleteLater()
+        self.settings_body_text.deleteLater()
 
     def hide(self):
-        self.title.hide()
-        self.ai_panel.hide()
+        self.game_modes_title.hide()
         self.ai_text.hide()
         self.ai_body_text.hide()
-        self.practice_panel.hide()
         self.practice_text.hide()
         self.practice_body_text.hide()
-        self.time_trial_panel.hide()
         self.time_trial_text.hide()
         self.time_trial_body_text.hide()
-        self.challenge_panel.hide()
         self.challenge_text.hide()
         self.challenge_body_text.hide()
+        self.settings_title.hide()
+        self.settings_panel.hide()
+        self.tooltip_image.hide()
+        self.settings_body_text.hide()
 
     def show(self):
-        self.title.show()
-        self.ai_panel.show()
+        self.game_modes_title.show()
         self.ai_text.show()
         self.ai_body_text.show()
-        self.practice_panel.show()
         self.practice_text.show()
         self.practice_body_text.show()
-        self.time_trial_panel.show()
         self.time_trial_text.show()
         self.time_trial_body_text.show()
-        self.challenge_panel.show()
         self.challenge_text.show()
         self.challenge_body_text.show()
+        self.settings_title.show()
+        self.settings_panel.show()
+        self.tooltip_image.show()
+        self.settings_body_text.show()
 
     def __init__(self, main):
         
-        # Title
-        self.title = QLabel(
+        # Game Modes Title
+        self.game_modes_title = QLabel(
             parent = main.central_widget,
             text = "Game Modes",
             font = QFont("Trebuchet MS", main.screen_height // 30),
             geometry = QRect(5 * main.screen_width // 12, main.screen_height // 24, main.screen_width // 6, main.screen_height // 20),
             alignment = Qt.AlignmentFlag.AlignCenter
         )
-        self.title.hide()
+        self.game_modes_title.hide()
 
         # AI Mode
-        # Bkgd Panel
-        self.ai_panel = QLabel(
-            parent = main.central_widget,
-            geometry = QRect(9 * main.screen_width // 64, 5 * main.screen_height // 36, 11 * main.screen_width // 32, main.screen_height // 4),
-            styleSheet = "background-color: #e5daeb"
-        )
-        self.ai_panel.hide()
-
         # Text
         self.ai_text = QLabel(
             parent = main.central_widget,
@@ -1537,26 +1529,18 @@ class Page5:
             parent = main.central_widget,
             text = "Test your skills against the computer!\nWhoever finds the most SETs wins.",
             font = QFont("Trebuchet MS", main.screen_height // 60),
-            geometry = QRect(9 * main.screen_width // 64, 7 * main.screen_height // 36, 11 * main.screen_width // 32, 7 * main.screen_height // 36),
+            geometry = QRect(9 * main.screen_width // 64, 7 * main.screen_height // 36, 11 * main.screen_width // 32, 5 * main.screen_height // 36),
             alignment = Qt.AlignmentFlag.AlignCenter,
             styleSheet = "background-color: #e5daeb"
         )
         self.ai_body_text.hide()
 
         # Practice Mode
-        # Bkgd Panel
-        self.practice_panel = QLabel(
-            parent = main.central_widget,
-            geometry = QRect(33 * main.screen_width // 64, 5 * main.screen_height // 36, 11 * main.screen_width // 32, main.screen_height // 4),
-            styleSheet = "background-color: #e5daeb"
-        )
-        self.practice_panel.hide()
-
         # Text
         self.practice_text = QLabel(
             parent = main.central_widget,
             text = "Practice",
-            font = QFont("Trebuchet MS", main.screen_height // 60),
+            font = QFont("Trebuchet MS", main.screen_height // 48),
             geometry = QRect(33 * main.screen_width // 64, 5 * main.screen_height // 36, 11 * main.screen_width // 32, main.screen_height // 18),
             alignment = Qt.AlignmentFlag.AlignCenter,
             styleSheet = "background-color: #e5daeb"
@@ -1568,27 +1552,19 @@ class Page5:
             parent = main.central_widget,
             text = "Practice finding SETs with no opponent,\nno score, and no pressure.\nPenalties are not applied in this game mode.",
             font = QFont("Trebuchet MS", main.screen_height // 60),
-            geometry = QRect(33 * main.screen_width // 64, 7 * main.screen_height // 36, 11 * main.screen_width // 32, 7 * main.screen_height // 36),
+            geometry = QRect(33 * main.screen_width // 64, 7 * main.screen_height // 36, 11 * main.screen_width // 32, 5 * main.screen_height // 36),
             alignment = Qt.AlignmentFlag.AlignCenter,
             styleSheet = "background-color: #e5daeb"
         )
         self.practice_body_text.hide()
 
         # Time Trial
-        # Bkgd Panel
-        self.time_trial_panel = QLabel(
-            parent = main.central_widget,
-            geometry = QRect(9 * main.screen_width // 64, 4 * main.screen_height // 9, 11 * main.screen_width // 32, main.screen_height // 4),
-            styleSheet = "background-color: #e5daeb"
-        )
-        self.time_trial_panel.hide()
-
         # Text
         self.time_trial_text = QLabel(
             parent = main.central_widget,
             text = "Time Trial",
-            font = QFont("Trebuchet MS", main.screen_height // 60),
-            geometry = QRect(9 * main.screen_width // 64, 4 * main.screen_height // 9, 11 * main.screen_width // 32, main.screen_height // 18),
+            font = QFont("Trebuchet MS", main.screen_height // 48),
+            geometry = QRect(9 * main.screen_width // 64, 7 * main.screen_height // 18, 11 * main.screen_width // 32, main.screen_height // 18),
             alignment = Qt.AlignmentFlag.AlignCenter,
             styleSheet = "background-color: #e5daeb"
         )
@@ -1599,27 +1575,19 @@ class Page5:
             parent = main.central_widget,
             text = "Race against the clock to clear a deck of cards.\nShow off your fastest times!",
             font = QFont("Trebuchet MS", main.screen_height // 60),
-            geometry = QRect(9 * main.screen_width // 64, main.screen_height // 2, 11 * main.screen_width // 32, 7 * main.screen_height // 36),
+            geometry = QRect(9 * main.screen_width // 64, 4 * main.screen_height // 9, 11 * main.screen_width // 32, 5 * main.screen_height // 36),
             alignment = Qt.AlignmentFlag.AlignCenter,
             styleSheet = "background-color: #e5daeb"
         )
         self.time_trial_body_text.hide()
 
         # Challenges
-        # Bkgd Panel
-        self.challenge_panel = QLabel(
-            parent = main.central_widget,
-            geometry = QRect(33 * main.screen_width // 64, 4 * main.screen_height // 9, 11 * main.screen_width // 32, main.screen_height // 4),
-            styleSheet = "background-color: #e5daeb"
-        )
-        self.challenge_panel.hide()
-
         # Text
         self.challenge_text = QLabel(
             parent = main.central_widget,
             text = "Challenges",
-            font = QFont("Trebuchet MS", main.screen_height // 60),
-            geometry = QRect(33 * main.screen_width // 64, 4 * main.screen_height // 9, 11 * main.screen_width // 32, main.screen_height // 18),
+            font = QFont("Trebuchet MS", main.screen_height // 48),
+            geometry = QRect(33 * main.screen_width // 64, 7 * main.screen_height // 18, 11 * main.screen_width // 32, main.screen_height // 18),
             alignment = Qt.AlignmentFlag.AlignCenter,
             styleSheet = "background-color: #e5daeb"
         )
@@ -1628,10 +1596,52 @@ class Page5:
         # Body Text
         self.challenge_body_text = QLabel(
             parent = main.central_widget,
-            text = "Break your brain with fun, alternate way to play SET!",
+            text = "Break your brain with fun, alternate way to play SET!\nThe rules for each challenge are listed\nin the \"Challenges\" menu.",
             font = QFont("Trebuchet MS", main.screen_height // 60),
-            geometry = QRect(33 * main.screen_width // 64, main.screen_height // 2, 11 * main.screen_width // 32, 7 * main.screen_height // 36),
+            geometry = QRect(33 * main.screen_width // 64, 4 * main.screen_height // 9, 11 * main.screen_width // 32, 5 * main.screen_height // 36),
             alignment = Qt.AlignmentFlag.AlignCenter,
             styleSheet = "background-color: #e5daeb"
         )
         self.challenge_body_text.hide()
+        
+        # Settings
+        # Title
+        self.settings_title = QLabel(
+            parent = main.central_widget,
+            text = "Settings",
+            font = QFont("Trebuchet MS", main.screen_height // 30),
+            geometry = QRect(5 * main.screen_width // 12, 7 * main.screen_height // 12, main.screen_width // 6, 5 * main.screen_height // 36),
+            alignment = Qt.AlignmentFlag.AlignCenter
+        )
+        self.settings_title.hide()
+        
+        # Bkgd panel
+        self.settings_panel = QLabel(
+            parent = main.central_widget,
+            geometry = QRect(9 * main.screen_width // 64, 13 * main.screen_height // 18, 17 * main.screen_width // 32, 23 * main.screen_height // 90),
+            styleSheet = "background-color: #e5daeb"
+        )
+        self.settings_panel.hide()
+        
+        # Tooltip image
+        self.tooltip_image = QLabel(
+            parent = main.central_widget,
+            geometry = QRect(5 * main.screen_width // 32, 3 * main.screen_height // 4, main.screen_width // 2, main.screen_height // 5),
+            pixmap = QPixmap("tutorial_tooltip.png").scaled(
+                QSize(main.screen_width // 2, main.screen_height // 5),
+                aspectRatioMode = Qt.AspectRatioMode.IgnoreAspectRatio,
+                transformMode = Qt.TransformationMode.FastTransformation
+            )
+        )
+        self.tooltip_image.hide()
+        
+        # Body Text
+        self.settings_body_text = QLabel(
+            parent = main.central_widget,
+            text = "Mouse over a setting's\ntext for a tool tip\ndescribing what it does.",
+            font = QFont("Trebuchet MS", main.screen_height // 60),
+            geometry = QRect(45 * main.screen_width // 64, 13 * main.screen_height // 18, 5 * main.screen_width // 32, 23 * main.screen_height // 90),
+            alignment = Qt.AlignmentFlag.AlignCenter,
+            styleSheet = "background-color: #e5daeb"
+        )
+        self.settings_body_text.hide()
