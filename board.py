@@ -421,7 +421,7 @@ class Board:
         if is_set:
 
             # Update score if in AI mode or challenge
-            if self.mode in ["recycle", "xs", "xl", "practice"]:
+            if self.mode in ["recycle", "xs", "xl", "practice", "time_trial"]:
                 self.player_score_card.setText(str(int(self.player_score_card.text()) + 1))
             elif self.mode == "ai":
                 if source == "player":
@@ -472,7 +472,7 @@ class Board:
                     self.num_cards -= self.num_variations
 
                 # Find extra cards that are not selected
-                cards_to_move = [card for card in self.current_board if (card.card_pos >= self.num_cards and card not in self.selected_cards)]
+                cards_to_move = [card for card in self.current_board if (card.card_pos >= len(self.current_board) - self.num_variations and card not in self.selected_cards)]
                 while self.selected_cards:
                     c = self.selected_cards.pop()
 
@@ -500,6 +500,7 @@ class Board:
                         c.fill = x.fill
                         c.corner = x.corner
                         c.has_border = False
+                        c.has_marker = x.has_marker
                         c.update()
                         self.current_board.remove(x)
                         x.destroy()

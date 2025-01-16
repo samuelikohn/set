@@ -120,15 +120,20 @@ class Main:
             # If valid format, validate settings
             if isinstance(settings, dict):
 
+                keys_to_remove = []
                 for key in settings.keys():
 
                     # All keys must represent settings that exist
                     if key not in default_settings.keys():
-                        settings.pop(key, None)
+                        keys_to_remove.append(key)
 
                     # All values must respresent valid values
                     elif not self.is_valid_settings(key, settings[key], settings["selected_shapes"]):
                         settings[key] = default_settings[key]
+
+                # Remove invalid keys
+                for key in keys_to_remove:
+                    settings.pop(key, None)
                 
                 # All settings must be present
                 for key in default_settings.keys():
@@ -161,15 +166,20 @@ class Main:
             # If valid format, validate times
             if isinstance(times, dict):
 
+                keys_to_remove = []
                 for key in times.keys():
 
                     # All keys must represent valid trait/variation combos
                     if key not in default_times:
-                        times.pop(key, None)
+                        keys_to_remove.append(key)
 
                     # All values must be sorted lists of positive ints with max length of 10
                     else:
                         times[key] = self.is_valid_times(times[key])
+
+                # Remove invalid keys
+                for key in keys_to_remove:
+                    times.pop(key, None)
                 
                 # All trait/variation combos must be present
                 for key in default_times:
