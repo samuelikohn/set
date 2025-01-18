@@ -322,7 +322,7 @@ class Board:
             else:
                 self.game_over_text.setText("It's a Tie")
 
-        elif self.mode in ["recycle", "xs"] and (not times or int(self.challenge_score_card.text()) > max(times)):
+        elif self.mode in ["recycle", "xs"] and (not times or int(self.player_score_card.text()) > max(times)):
 
             # Recycle, XS challenge: Check if score is new max for scores
             self.game_over_text.setText("New High Score!")
