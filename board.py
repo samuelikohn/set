@@ -588,20 +588,22 @@ class Board:
             # Select list of times based on mode and settings
             time_key = f"{self.mode}_{self.num_traits}{self.num_variations}"
             times = self.main.times[time_key]
-            times.append(time)
-            times.sort()
 
-            # Max times stored is 10
-            if len(times) == 11:
-                if self.mode in ["recycle", "xs"]:
-                    times.pop(0)
-                else:
-                    times.pop()
+            if time not in times:
+                times.append(time)
+                times.sort()
 
-            # Save new list of times
-            self.main.times[time_key] = times
-            with open("times.json", "w") as f:
-                dump(self.main.times, f, indent = 4)
+                # Max times stored is 10
+                if len(times) == 11:
+                    if self.mode in ["recycle", "xs"]:
+                        times.pop(0)
+                    else:
+                        times.pop()
+
+                # Save new list of times
+                self.main.times[time_key] = times
+                with open("times.json", "w") as f:
+                    dump(self.main.times, f, indent = 4)
 
         # Return to menu called from
         if self.mode == "time_trial":

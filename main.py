@@ -8,6 +8,36 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
 from time_trial_page import TimeTrialPage
 
 
+# Card positions incorrect when reducing board size, multiple AI sets in a row
+    # Deck empty?
+# recycle scores not saved to file
+    # check for other modes
+# XS must have at least 1 SET to start
+    # regen board if no SETs to start
+# If holding space when AI finds SET, can cell set prematurely
+# Crash when pausing after calling SET in recycle mode
+    # recycle board has no AI attribute
+
+# Project stuffs
+    # technical info and game features in README
+    # screenshots/video demo
+
+# Sounds
+    # button click, slider place, spinbox tick
+    # call set active
+    # card click/unclick
+    # card mark/unmark
+    # set found
+    # incorrect set
+    # AI found
+    # timeout
+    # game over/tie
+    # win
+    # lose
+    # new best time/high score
+    # count down in recycle mode, call set count down
+
+
 class Main:
 
     def go_to_challenges_page(self):
@@ -53,7 +83,7 @@ class Main:
 
     def is_valid_times(self, val):
 
-        # Time must be stored as a list, empty list if valid
+        # Time must be stored as a list, empty list is valid
         if not isinstance(val, list) or not val:
             return []
         
@@ -276,6 +306,7 @@ class Main:
         self.go_to_main_menu()
         
 
+# Hijack space bar press when board is active to trigger "Call SET" action
 class SpaceEventFilter(QObject):
     
     def eventFilter(self, obj, event):
