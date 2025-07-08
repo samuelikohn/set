@@ -11,27 +11,10 @@ from time_trial_page import TimeTrialPage
 # Card positions incorrect when reducing board size, multiple AI sets in a row
     # Deck empty?
 # If holding space when AI finds SET, can cell set prematurely
-# Crash when pausing after calling SET in recycle mode
-    # recycle board has no AI attribute
 
 # Project stuffs
     # technical info and game features in README
     # screenshots/video demo
-
-# Sounds
-    # button click, slider place, spinbox tick
-    # call set active
-    # card click/unclick
-    # card mark/unmark
-    # set found
-    # incorrect set
-    # AI found
-    # timeout
-    # game over/tie
-    # win
-    # lose
-    # new best time/high score
-    # count down in recycle mode, call set count down
 
 
 class Main:

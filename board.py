@@ -1213,6 +1213,9 @@ class Board:
             )
             self.ai_score_text.show()
 
+        else:
+            self.ai = None
+
         # Game over text
         self.game_over_text = QLabel(
             parent = main.central_widget,
