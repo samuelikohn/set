@@ -7,11 +7,6 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
 from time_trial_page import TimeTrialPage
 
-
-# Card positions incorrect when reducing board size, multiple AI sets in a row
-    # Deck empty?
-# If holding space when AI finds SET, can cell set prematurely
-
 # Project stuffs
     # technical info and game features in README
     # screenshots/video demo

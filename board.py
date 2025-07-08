@@ -487,7 +487,7 @@ class Board:
                         })
                     
                     # Remove selected card if outside board size
-                    if c.card_pos >= self.num_cards:
+                    if c.card_pos >= len(self.current_board) - self.num_variations:
                         self.current_board.remove(c)
                         c.destroy()
 
@@ -824,7 +824,7 @@ class Board:
                     self.board_width = 5
                     self.board_height = 4
                 else:
-                    self.board_width = 5
+                    self.board_width = 3 # TODO CHANGE
                     self.board_height = 5
                 self.card_length = main.screen_height // 6
             case (4, 3):
