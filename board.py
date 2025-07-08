@@ -919,7 +919,18 @@ class Board:
         # Draw cards
         for i in range(self.num_cards):
             self.draw_card(i)
-            
+
+        # Prevent XS game starting with invalid board
+        if mode == "xs":
+            self.count_sets(self.current_board, self.all_traits, self.all_traits)
+            while not self.sets:
+                self.deck = [{"color": colors[i], "shape": shapes[j], "number": numbers[k], "fill": fills[l], "corner": corners[m]} for i in range(self.num_variations) for j in range(self.num_variations) for k in range(self.num_variations) for l in range(ll) for m in range(mm)]
+                self.current_board = []
+                for i in range(self.num_cards):
+                    self.draw_card(i)
+                self.count_sets(self.current_board, self.all_traits, self.all_traits)
+            self.sets = []
+
         # Create "Call Set" Button
         self.call_set_btn = CallSetButton(main, self)
         self.call_set_btn.setFocus()

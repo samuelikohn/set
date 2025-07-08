@@ -10,10 +10,6 @@ from time_trial_page import TimeTrialPage
 
 # Card positions incorrect when reducing board size, multiple AI sets in a row
     # Deck empty?
-# recycle scores not saved to file
-    # check for other modes
-# XS must have at least 1 SET to start
-    # regen board if no SETs to start
 # If holding space when AI finds SET, can cell set prematurely
 # Crash when pausing after calling SET in recycle mode
     # recycle board has no AI attribute
