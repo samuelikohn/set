@@ -7,10 +7,6 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
 from time_trial_page import TimeTrialPage
 
-# Project stuffs
-    # technical info and game features in README
-    # screenshots/video demo
-
 
 class Main:
 
