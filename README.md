@@ -32,7 +32,7 @@ This application was developed using Python 3.12.1. It uses PyQT 6.7.2 for the G
 
 ## Links
 
-- [Website](https://personalportfolio-git-main-sam-kohns-projects.vercel.app/)
-- [Blog](https://personalportfolio-git-main-sam-kohns-projects.vercel.app/blog/set)
+- [Website](https://personalportfolio-three-pi.vercel.app/)
+- [Blog](https://personalportfolio-three-pi.vercel.app/blog/set)
 
 ### This app was made as a personal project for fun. No copyright infringement intended.
